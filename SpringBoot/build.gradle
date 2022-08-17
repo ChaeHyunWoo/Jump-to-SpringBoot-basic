@@ -1,0 +1,55 @@
+plugins {
+    id 'org.springframework.boot' version '2.7.2' // SpringBoot 버전
+    id 'io.spring.dependency-management' version '1.0.12.RELEASE'
+    id 'java'
+}
+
+group = 'com.mysite'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11' // java 버전:11
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+// Gradle의 developmentOnly는 개발환경에만 적용되는 설정이다.
+// 즉, 운영환경에 배포되는 jar, war 파일에는 developmentOnly로 설치된 lib(라이브러리)를 제외
+
+// STS일 때
+//build.gradle 파일의 내용을 적용하려면 다음처럼 build.gradle 파일을 선택한후 오른쪽 마우스 버튼을 눌러
+// [Gradle -> Refresh Gradle Project]를 선택하여 필요한 라이브러리를 다운로드해야 한다.
+// 인텔이 제이
+// View -> Tool Windows -> Gradle -> 해당 프로젝트 선택 -> Refresh external project
+
+dependencies {
+
+    //스프링 시큐리티
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
+
+    // View에서 전달받은 엽력 값 검증 -> Spring Boot Validation 라이브러리 사용
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    //H2 데이터베이스는 주로 개발용이나 소규모 프로젝트에서 사용되는 파일 기반의 경량 데이터베이스이다.
+    // 개발시에는 H2를 사용하여 빠르게 개발하고 실제 운영시스템은 좀 더 규모있는 DB를 사용하는 것이 일반적인 개발 패턴이다.
+    runtimeOnly 'com.h2database:h2'
+
+    // JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

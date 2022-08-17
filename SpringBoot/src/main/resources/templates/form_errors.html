@@ -1,0 +1,6 @@
+
+<!-- Error 메세지를 표시하는 공통 템플릿 -->
+<div th:fragment="formErrorsFragment" class="alert alert-danger"
+     role="alert" th:if="${#fields.hasAnyErrors()}">
+  <div th:each="err : ${#fields.allErrors()}" th:text="${err}" />
+</div>

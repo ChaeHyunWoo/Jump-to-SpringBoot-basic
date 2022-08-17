@@ -1,0 +1,25 @@
+<html layout:decorate="~{layout}">
+<div layout:fragment="content" class="container">
+  <h5 class="my-3 border-bottom pb-2">질문등록</h5>
+
+  <!--  Post방식으로 데이터 전송 -->         <!-- QuestionController의 questionCreate 메서드(get)에 매개변수 QuestionForm 추가 -->
+                            <!-- -> 질문등록 버튼을 통해 Get방식으로 요청되더라도 th:object에 의해 QuestionForm 객체가 필요하기 때문 -->
+  <form th:object="${questionForm}" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <!-- 검증에 실패할 경우 오류 메세지 출력하는 템플릿 사용 -->
+    <div th:replace="form_errors :: formErrorsFragment"></div>
+
+    <!-- name="subject" 와 content를 th:filed 속성으로 변경 -->
+    <!-- 이렇게 하면 해당 태그의 id,name,value 속성이 모두 자동생성되고 타임리프가 value 속성에 기존 값을 채워넣어 오류가 발생해도 기존에 입력된 값 유지 -->
+    <div class="mb-3">
+      <label for="subject" class="form-label">제목</label>
+      <input type="text" th:field="*{subject}" class="form-control">
+    </div>
+    <div class="mb-3">
+      <label for="content" class="form-label">내용</label>
+      <textarea th:field="*{content}" class="form-control" rows="10"></textarea>
+    </div>
+    <input type="submit" value="저장하기" class="btn btn-primary my-2">
+  </form>
+</div>
+</html>
