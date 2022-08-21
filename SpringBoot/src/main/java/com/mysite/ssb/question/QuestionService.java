@@ -1,14 +1,17 @@
 package com.mysite.ssb.question;
 
 import com.mysite.ssb.DataNotFoundException;
+import com.mysite.ssb.anwer.Answer;
 import com.mysite.ssb.user.SiteUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,16 +23,48 @@ public class QuestionService {
 
     private final QuestionRepository questionRepository;
 
+    // 질문 검색
+    // - JPA를 사용하면 SQL 쿼리문을 Java 코드로 작성 가능
+    // - JPA에서 제공하는 Specification 인터페이스 사용 -> 정교한 쿼리의 작성을 도와주는 JPA의 도구
+    private Specification<Question> search(String kw) {
+
+        return new Specification<Question>() {
+            private static final long serialVersionUID = 1L;
+
+            @Override // Specification 클래스 import 시 오버라이드
+            public Predicate toPredicate(Root<Question> q, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                query.distinct(true); // 중복 제거
+                Join<Question,SiteUser> u1 = q.join("author", JoinType.LEFT);
+                Join<Question, Answer> a = q.join("answerList", JoinType.LEFT);
+                Join<Answer,SiteUser> u2 = a.join("author", JoinType.LEFT);
+
+                return
+                        cb.or(cb.like(q.get("subject"),"%" + kw + "%"), // 제목
+                        cb.like(q.get("content"),"%" + kw + "%"),       // 내용
+                        cb.like(u1.get("username"), "%" + kw + "%"),    // 질문 작성자
+                        cb.like(a.get("content"), "%" + kw + "%"),      // 답변 내용
+                        cb.like(u2.get("username"), "%" + kw + "%"));   // 답변 작성자
+
+            } // end toPredicate()
+        }; // end Specification()
+    }
+
+
     // 페이징 기능
     // 질문 목록을 조회하여 리턴하는 getList 메서드
-    public Page<Question> getList(int page) {
+    // + 검색 기능을 추가하였기에 매개변수에 String kw 추가 - 2022-08-21
+    public Page<Question> getList(int page, String kw) {
 
         // 3-02(페이징) 가장 최근에 작성한 게시물이 가장 먼저 보이도록 구현
         List<Sort.Order> sorts = new ArrayList<>();
         sorts.add(Sort.Order.desc(("createDate"))); // 날짜 순으로 내림차순 정릴
         // PageRequest.of() :
         Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts));
-        return this.questionRepository.findAll(pageable);
+        Specification<Question> spec = search(kw); // 검색 기능 추가
+
+        // Specification 대신 @Query 사용할 때
+        return this.questionRepository.findAllByKeyword(kw, pageable);
+        // -> Specification 사용할 때 return this.questionRepository.findAll(spec, pageable);
     }
 
     // 질문 상세 - 제목 + 내용 출력

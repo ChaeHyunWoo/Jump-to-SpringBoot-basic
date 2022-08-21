@@ -48,6 +48,10 @@ dependencies {
 
     // JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // MarkDown
+    // - 스프링이 내부적으로 관리하는 lib는 버전 정보가 필요없지만 아닌 경우에는 버전 정보가 필요하다.
+    implementation 'org.commonmark:commonmark:0.18.2'
 }
 
 tasks.named('test') {

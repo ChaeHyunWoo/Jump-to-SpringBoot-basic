@@ -36,10 +36,14 @@ public class QuestionController {
     // list()에 @RequestParam(value="page", defaultValue="0") int page 매개변수 추가
     // + URL에 페이지 파라미터 page가 전달되지 않은 경우 디폴트 값(기본값)으로 0이 되도록 설정 / JPA 페이징은 번호가 0부터 시작!!!
     @RequestMapping("/list")
-    public String list(Model model, @RequestParam(value = "page", defaultValue = "0") int page) {
-
-        Page<Question> paging = this.questionService.getList(page);
+    public String list(Model model, @RequestParam(value = "page", defaultValue = "0") int page,
+                       @RequestParam(value = "kw", defaultValue = "") String kw) {
+                        // 3-14 검색기능 추가 / kw:검색어 / 디폴트(기본값)을 빈 문자열로 설정
+        Page<Question> paging = this.questionService.getList(page, kw);
         model.addAttribute("paging", paging);
+
+        // 3-14 화면에 입력한 검색어(kw)를 화면에 유지하기 위해 kw 값을 저장
+        model.addAttribute("kw", kw); // -> kw값이 파라미터로 들어오면 해당 값으로 질문 목록이 검색되어 조회 된다.
 
         return "question_list";
     }

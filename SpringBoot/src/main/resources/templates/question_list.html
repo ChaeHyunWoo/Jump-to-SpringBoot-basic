@@ -1,6 +1,21 @@
 
 <html layout:decorate="~{layout}">
 <div layout:fragment="content" class="container my-3">
+    <!-- 3-14 검색기능 추가 -->
+    <div class="row my-3">
+        <div class="col-6">
+            <a th:href="@{/question/create}" class="btn btn-primary">질문 등록하기</a>
+        </div>
+        <div class="col-6">
+            <div class="input-group">
+                <input type="text" id="search_kw" class="form-control" th:value="${kw}">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="button" id="btn_search">찾기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <table class="table">
         <thead class="table-dark">
         <tr class="text-center">
@@ -29,7 +44,7 @@
         <ul class="pagination justify-content-center">
             <li class="page-item" th:classappend="${!paging.hasPrevious} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{|?page=${paging.number-1}|}">
+                   href="javascript:void(0)" th:data-page="${paging.number-1}">
                     <span>이전</span>
                 </a>
             </li>
@@ -38,10 +53,10 @@
                 th:if="${page >= paging.number-5 and page <= paging.number+5}"
                 th:classappend="${page == paging.number} ? 'active'"
                 class="page-item">
-                <a th:text="${page}" class="page-link" th:href="@{|?page=${page}|}"></a>
+                <a th:text="${page}" class="page-link" href="javascript:void(0)" th:data-page="${page}"></a>
             </li>
             <li class="page-item" th:classappend="${!paging.hasNext} ? 'disabled'">
-                <a class="page-link" th:href="@{|?page=${paging.number+1}|}">
+                <a class="page-link" href="javascript:void(0)" th:data-page="${paging.number+1}">
                     <span>다음</span>
                 </a>
             </li>
@@ -49,8 +64,39 @@
     </div>
     <!-- 페이징처리 끝 -->
 
+    <!-- 3-14 page와 kw(검색어)를 동시에 GET 방식으로 요청 -->
+    <!-- kw,page는 이전에 요청한 값을 기억해야 하기에 value값을 유지할수 있도록 함 -->
+    <form th:action="@{/question/list}" method="get" id="searchForm">
+        <input type="hidden" id="kw" name="kw" th:value="${kw}">
+        <input type="hidden" id="page" name="page" th:value="${paging.number}">
+    </form>
 
     <!-- 버튼 클릭시 "/question/create" URL 호출 -->
-    <a th:href="@{/question/create}" class="btn btn-primary">질문 등록하기</a>
+    <!-- 3-14에서 삭제 -->
+    <!--<a th:href="@{/question/create}" class="btn btn-primary">질문 등록하기</a>-->
 </div>
+
+<!-- 검색을 위한 JS 작성 -->
+<script layout:fragment="script" type='text/javascript'>
+
+    // class 속성값으로 page-link 라는 값을 가지고 있는 링크를 클릭하면
+    // 링크의 data-page 속성값을 읽어 searchForm의 page필드에 설정하여 searchForm을 요청한다.
+    // 그리고 검색버튼을 클릭하면 검색어(kw) 텍스트창에 입력된 값을 searchForm의 kw 필드에 설정하여 searchForm을 요청한다.
+    const page_elements = document.getElementsByClassName("page-link");
+
+    Array.from(page_elements).forEach(function (element) {
+        element.addEventListener('click', function () {
+            document.getElementById('page').value = this.dataset.page;
+            document.getElementById('searchForm').submit();
+        });
+    });
+
+    const btn_search = document.getElementById("btn_search");
+
+    btn_search.addEventListener('click', function() {
+        document.getElementById('kw').value = document.getElementById('search_kw').value;
+        document.getElementById('page').value = 0;  // 검색버튼을 클릭할 경우 0페이지부터 조회한다.
+        document.getElementById('searchForm').submit();
+    });
+</script>
 </html>

@@ -2,7 +2,10 @@ package com.mysite.ssb.question;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -26,4 +29,24 @@ public interface QuestionRepository extends JpaRepository<Question, Integer> {
     // 페이징 처리(JPA lib를 받았으면 안에 들어있다.)
     // - Pageable 객체를 입력으로 받아 Page<Question> 타입 객체를 리턴하는 findAll 메서드 생성
     Page<Question> findAll(Pageable pageable);
+
+    // 질문 검색
+    // - JPA의 Specification 인터페이스 사용 -> 자세한 설명은 QuestionService에 작성하였음
+    Page<Question> findAll(Specification<Question> spec, Pageable pageable);
+
+    // 질문 검색
+    // - 위의 JPA의 Specification 인터페이스 대신 @Query 어노테이션을 사용함
+    @Query("select "
+            + "distinct q "
+            + "from Question q "
+            + "left outer join SiteUser u1 on q.author=u1 "
+            + "left outer join Answer a on a.question=q "
+            + "left outer join SiteUser u2 on a.author=u2 "
+            + "where "
+            + "   q.subject like %:kw% "
+            + "   or q.content like %:kw% "
+            + "   or u1.username like %:kw% "
+            + "   or a.content like %:kw% "
+            + "   or u2.username like %:kw% ")
+    Page<Question> findAllByKeyword(@Param("kw") String kw, Pageable pageable);
 }
